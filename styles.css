@@ -1,0 +1,17 @@
+/* Custom mobile overrides for high-contrast pitch-side touch entry */
+body {
+    background-color: #f4f6f9;
+    font-size: 1rem;
+}
+.touch-target {
+    min-height: 48px;
+    font-size: 1.05rem;
+}
+.card {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+.badge-role {
+    font-size: 0.85rem;
+    padding: 0.35em 0.65em;
+}

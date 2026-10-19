@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">Academy Athlete Registry</h2>
+    {% if session.get('role') in ['admin', 'trainer'] %}
+    <a href="/players/add" class="btn btn-success touch-target d-flex align-items-center">+ Register Player</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="{% if session.get('role') == 'admin' %}col-lg-8{% else %}col-12{% endif %} mb-4">
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Player Name</th>
+                            <th>Position</th>
+                            <th>Dominant Foot</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in players %}
+                        <tr>
+                            <td class="fw-bold">{{ player.full_name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ player.primary_position }}</span></td>
+                            <td>{{ player.preferred_foot }}</td>
+                            <td>
+                                <a href="/players/{{ player.id }}" class="btn btn-sm btn-outline-primary touch-target">View Dossier</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No athlete records found in database.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if session.get('role') == 'admin' %}
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white fw-bold">System Audit Logs</div>
+            <ul class="list-group list-group-flush small">
+                {% for log in audit_trail %}
+                <li class="list-group-item">
+                    <div class="fw-semibold">{{ log.action }}</div>
+                    <div class="text-muted">{{ log.username }} ({{ log.role }}) - {{ log.timestamp }}</div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No operational actions logged yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
