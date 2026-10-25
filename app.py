@@ -172,7 +172,6 @@ def player_detail(player_id):
     conn.close()
     return render_template('player_detail.html', player=player, metrics=metrics)
 
-
 @app.route('/players/<int:player_id>/record_metric', methods=['POST'])
 @login_required
 @roles_required('admin', 'trainer')
