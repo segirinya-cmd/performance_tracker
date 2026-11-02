@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Edit Athlete Profile</h5>
+                <span class="badge bg-secondary">ID #{{ player.id }}</span>
+            </div>
+            <div class="card-body">
+                <form action="/players/{{ player.id }}/edit" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Full Name</label>
+                        <input type="text" name="full_name" class="form-control touch-target" value="{{ player.full_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Date of Birth</label>
+                        <input type="date" name="date_of_birth" class="form-control touch-target" value="{{ player.date_of_birth }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tactical Position</label>
+                        <select name="primary_position" class="form-select touch-target" required>
+                            {% for pos in ['Goalkeeper', 'Centre-Back', 'Full-Back', 'Central Midfield', 'Winger', 'Centre-Forward'] %}
+                            <option value="{{ pos }}" {% if player.primary_position == pos %}selected{% endif %}>{{ pos }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Preferred Foot</label>
+                        <select name="preferred_foot" class="form-select touch-target" required>
+                            <option value="Right" {% if player.preferred_foot == 'Right' %}selected{% endif %}>Right</option>
+                            <option value="Left" {% if player.preferred_foot == 'Left' %}selected{% endif %}>Left</option>
+                            <option value="Both" {% if player.preferred_foot == 'Both' %}selected{% endif %}>Both</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="/players/{{ player.id }}" class="btn btn-outline-secondary touch-target">Cancel</a>
+                        <button type="submit" class="btn btn-warning touch-target px-4 fw-bold">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

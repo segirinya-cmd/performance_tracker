@@ -151,7 +151,65 @@ def add_player():
         flash(f"Player {name} successfully added.", "success")
         return redirect(url_for('dashboard'))
     return render_template('add_player.html')
+@app.route('/players/<int:player_id>/edit', methods=['GET', 'POST'])
+@login_required
+@roles_required('admin', 'trainer')
+def edit_player(player_id):
+    conn = get_db()
+    player = conn.execute("SELECT * FROM players WHERE id = ?", (player_id,)).fetchone()
+    
+    if not player:
+        conn.close()
+        abort(404)
 
+    if request.method == 'POST':
+        name = request.form.get('full_name', '').strip()
+        dob = request.form.get('date_of_birth', '').strip()
+        position = request.form.get('primary_position', '').strip()
+        foot = request.form.get('preferred_foot', '').strip()
+
+        if not name or not dob or not position or not foot:
+            flash("All player dossier fields are mandatory.", "warning")
+            return redirect(url_for('edit_player', player_id=player_id))
+
+        conn.execute(
+            """UPDATE players 
+               SET full_name = ?, date_of_birth = ?, primary_position = ?, preferred_foot = ? 
+               WHERE id = ?""",
+            (name, dob, position, foot, player_id)
+        )
+        conn.commit()
+        conn.close()
+
+        log_audit(f"Updated profile for player: {name} (ID: {player_id})")
+        flash(f"Profile for {name} updated successfully.", "success")
+        return redirect(url_for('player_detail', player_id=player_id))
+
+    conn.close()
+    return render_template('edit_player.html', player=dict(player))
+
+
+@app.route('/players/<int:player_id>/delete', methods=['POST'])
+@login_required
+@roles_required('admin')  # Strictly Admin-only to preserve data integrity
+def delete_player(player_id):
+    conn = get_db()
+    player = conn.execute("SELECT * FROM players WHERE id = ?", (player_id,)).fetchone()
+    
+    if not player:
+        conn.close()
+        abort(404)
+
+    player_name = player['full_name']
+    
+    # SQLite foreign keys with ON DELETE CASCADE automatically delete associated metrics
+    conn.execute("DELETE FROM players WHERE id = ?", (player_id,))
+    conn.commit()
+    conn.close()
+
+    log_audit(f"Deleted player: {player_name} (ID: {player_id})")
+    flash(f"Player {player_name} and all associated metrics were deleted.", "info")
+    return redirect(url_for('dashboard'))
 @app.route('/players/<int:player_id>')
 @login_required
 def player_detail(player_id):
@@ -161,7 +219,7 @@ def player_detail(player_id):
         conn.close()
         abort(404)
 
-    metrics = conn.execute(
+    metrics_rows = conn.execute(
         """SELECT m.*, u.username as coach_name 
            FROM performance_metrics m 
            JOIN users u ON m.recorded_by = u.id 
@@ -170,8 +228,11 @@ def player_detail(player_id):
         (player_id,)
     ).fetchall()
     conn.close()
-    return render_template('player_detail.html', player=player, metrics=metrics)
 
+    # Convert sqlite3.Row objects to standard Python dicts for JSON serialization
+    metrics = [dict(row) for row in metrics_rows]
+
+    return render_template('player_detail.html', player=dict(player), metrics=metrics)
 @app.route('/players/<int:player_id>/record_metric', methods=['POST'])
 @login_required
 @roles_required('admin', 'trainer')

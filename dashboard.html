@@ -21,21 +21,33 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for player in players %}
-                        <tr>
-                            <td class="fw-bold">{{ player.full_name }}</td>
-                            <td><span class="badge bg-light text-dark border">{{ player.primary_position }}</span></td>
-                            <td>{{ player.preferred_foot }}</td>
-                            <td>
-                                <a href="/players/{{ player.id }}" class="btn btn-sm btn-outline-primary touch-target">View Dossier</a>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">No athlete records found in database.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+    {% for player in players %}
+    <tr>
+        <td class="fw-bold">{{ player.full_name }}</td>
+        <td><span class="badge bg-light text-dark border">{{ player.primary_position }}</span></td>
+        <td>{{ player.preferred_foot }}</td>
+        <td>
+            <div class="btn-group btn-group-sm" role="group">
+                <a href="/players/{{ player.id }}" class="btn btn-outline-primary">View</a>
+                
+                {% if session.get('role') in ['admin', 'trainer'] %}
+                <a href="/players/{{ player.id }}/edit" class="btn btn-outline-warning">Edit</a>
+                {% endif %}
+                
+                {% if session.get('role') == 'admin' %}
+                <form action="/players/{{ player.id }}/delete" method="POST" onsubmit="return confirm('Permanently remove {{ player.full_name }}?');" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger rounded-0 rounded-end">Delete</button>
+                </form>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4" class="text-center py-4 text-muted">No athlete records found in database.</td>
+    </tr>
+    {% endfor %}
+</tbody>
                 </table>
             </div>
         </div>
